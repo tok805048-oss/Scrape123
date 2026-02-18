@@ -3,7 +3,6 @@ name: Monthly scrapers
 on:
   workflow_dispatch:
   schedule:
-    # 1x na mesec: 1. dan ob 03:30 UTC
     - cron: "30 3 1 * *"
 
 concurrency:
@@ -13,14 +12,25 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        script:
+          - MerkurV1.py
+          - ObiV1.py
+          - KalcerV1.py
+          - SlovenijalesV1.py
+          - TehnolesV1.py
+          - ZagozenV1.py
+          - PilihBetonV1.py
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
@@ -30,16 +40,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run all scrapers
+      - name: Run scraper
         env:
           OUTPUT_DIR: artifacts
-          SCRIPT_TIMEOUT_MIN: "45"
+          EXPORT_EXCEL: "0"
         run: |
-          python run_all.py
+          python ${{ matrix.script }}
 
-      - name: Upload artifacts (JSON/XLSX/logs)
+      - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ceniki-${{ github.run_id }}
+          name: ceniki-${{ matrix.script }}-${{ github.run_id }}
           path: artifacts/**
+          retention-days: 30
