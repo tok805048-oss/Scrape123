@@ -304,7 +304,11 @@ def main():
                             if len(new_data_for_category) % 5 == 0:
                                 save_to_excel(all_products_data + new_data_for_category, output_filepath)
 
-                        time.sleep(random.uniform(2.0, 20.0))
+                        is_ci = os.environ.get("GITHUB_ACTIONS", "").lower() == "true"
+                        if is_ci:
+                            time.sleep(random.uniform(0.7, 2.5))   # hitreje na GitHubu
+                        else:
+                            time.sleep(random.uniform(2.0, 20.0))  # počasneje lokalno
 
                     if not soup1.select_one('a.next'): break
                     n += 1
