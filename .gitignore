@@ -1,0 +1,7 @@
+artifacts/
+Ceniki_Scraping/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
